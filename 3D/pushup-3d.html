@@ -116,7 +116,9 @@ html.booting .top,html.booting .rail{opacity:0;pointer-events:none}
 
 @media (max-width:760px),(max-aspect-ratio:19/20){
   .rail{display:none}
-  .panel,.panel.hero{left:12px!important;right:12px!important;top:auto;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:none;width:auto;padding:18px;gap:10px;border-radius:16px;background:var(--glass);border:1px solid var(--line);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+  /* scrim: fade the lower scene to night so the floor below never bleeds in behind the card */
+  #ui::before{content:"";position:absolute;left:0;right:0;bottom:0;height:54%;background:linear-gradient(to top,var(--night) 22%,rgba(7,10,18,.62) 56%,transparent);pointer-events:none}
+  .panel,.panel.hero{left:12px!important;right:12px!important;top:auto;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:none;width:auto;padding:18px;gap:10px;border-radius:16px;background:rgba(9,12,19,.92);border:1px solid var(--line);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 18px 50px rgba(0,0,0,.5)}
   .panel h1{font-size:30px}.panel h2{font-size:24px}.panel p,.panel.hero p{font-size:15px}
   .chips,.hint{display:none}.eyebrow{font-size:12px}
   #call{width:240px}
@@ -1049,6 +1051,16 @@ const CAM = [
   { tx:3.05, ty:5.1, d:6.4, az:-.18, el:.07 },
   { tx:2.65, ty:1.5, d:8.8, az:.04, el:.08 }
 ];
+// Portrait framing, tuned per floor: centre each step's key component in the
+// upper area. { tx,ty = look target; d = distance; az,el = orbit; sh = look
+// shift (lowers the look so the component rides higher, clearing the card). }
+const PORT = [
+  { tx:2.40, ty:16.35, d:8.6,  az:-.14, el:.05, sh:-.55 }, // roof: pushups
+  { tx:3.05, ty:13.35, d:11.2, az:.02,  el:.03, sh:-.85 }, // sales: pipeline board + call
+  { tx:2.95, ty:9.45,  d:10.8, az:.05,  el:.03, sh:-.80 }, // marketing: posters
+  { tx:2.80, ty:5.45,  d:10.0, az:.12,  el:.04, sh:-.75 }, // automations: lever + board
+  { tx:2.75, ty:2.05,  d:11.8, az:-.02, el:.055, sh:-.58 } // websites: coach + the site he shipped
+];
 const camT = new THREE.Vector3(), camP = new THREE.Vector3(), lookT = new THREE.Vector3(), lookP = new THREE.Vector3();
 let camInit = false;
 function cameraFor(st, portrait){
@@ -1062,12 +1074,29 @@ function cameraFor(st, portrait){
     c = wOut > 0 ? m(m(a, fol, wIn), b, wOut) : m(a, fol, wIn);
   }
   if (portrait){
-    const aspect = camera.aspect;
-    c.d = c.d*clamp(1.05/Math.max(.45, aspect)*.62, 1, 1.6); c.shift = -c.d*.14;
-    // phones: frame what each floor is about, not just him
-    const FOCUS = [[2.15, 1.18], [2.6, 1.05], [3.2, 1.0], [3.1, 1.12], [coach.position.x + .4, 1.0]];
-    if (st.hold){ c.tx = FOCUS[st.k][0]; c.d *= FOCUS[st.k][1]; }
-    else c.tx = lerp(c.tx, coach.position.x + .2, .75);
+    if (st.hold){
+      if (st.k === 4){
+        // ground floor on phones: open on the coach at the button, then pan
+        // right to reveal the PUSHUP STUDIO once he's pressed it.
+        const BTN_CAM    = { tx:2.35, ty:1.55, d:8.6,  az:.03,  el:.06, sh:-.35 };
+        const STUDIO_CAM = { tx:4.5, ty:2.35, d:12.2, az:-.05, el:.15, sh:-.5 };
+        const s = smooth((st.T - 1.9)/1.8);          // press lands ~T1.9; pan over ~1.8s
+        const L = (a, b) => lerp(a, b, s);
+        c = { tx:L(BTN_CAM.tx, STUDIO_CAM.tx), ty:L(BTN_CAM.ty, STUDIO_CAM.ty), d:L(BTN_CAM.d, STUDIO_CAM.d),
+              az:L(BTN_CAM.az, STUDIO_CAM.az), el:L(BTN_CAM.el, STUDIO_CAM.el), shift:L(BTN_CAM.sh, STUDIO_CAM.sh) };
+      } else {
+        const q = PORT[st.k];
+        c = { tx:q.tx, ty:q.ty, d:q.d, az:q.az, el:q.el, shift:q.sh };
+      }
+    } else {
+      // between floors: ride down with the coach, keeping a portrait distance
+      const q = PORT[st.k], r = PORT[Math.min(4, st.k + 1)], s = smooth(st.g);
+      c.d = lerp(q.d, r.d, s);
+      c.tx = lerp(c.tx, coach.position.x + .2, .7);
+      c.ty = coach.position.y + 1.0;
+      c.az = lerp(q.az, r.az, s); c.el = lerp(q.el, r.el, s);
+      c.shift = -.6;
+    }
   }
   return c;
 }
