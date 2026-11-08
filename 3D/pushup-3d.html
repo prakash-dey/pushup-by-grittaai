@@ -214,9 +214,9 @@ html.booting .top,html.booting .rail{opacity:0;pointer-events:none}
 <div class="rail" aria-label="Floor">
   <span>FLOOR</span>
   <button type="button" data-go="0" aria-label="Roof: introduction">R</button>
-  <button type="button" data-go="1" aria-label="Floor 4: Sales">4</button>
-  <button type="button" data-go="2" aria-label="Floor 3: Marketing">3</button>
-  <button type="button" data-go="3" aria-label="Floor 2: Automations">2</button>
+  <button type="button" data-go="1" aria-label="Floor 3: Sales">3</button>
+  <button type="button" data-go="2" aria-label="Floor 2: Marketing">2</button>
+  <button type="button" data-go="3" aria-label="Floor 1: Automations">1</button>
   <button type="button" data-go="4" aria-label="Ground floor: Websites">G</button>
 </div>
 
@@ -232,19 +232,19 @@ html.booting .top,html.booting .rail{opacity:0;pointer-events:none}
         <div class="row"><a class="cta" href="#book">Book a strategy call</a><span class="hint"><i aria-hidden="true"></i>Scroll to drop in</span></div>
       </div>
       <div class="panel L" id="pn1">
-        <div class="eyebrow"><span class="fl">4</span>Sales</div>
+        <div class="eyebrow"><span class="fl">3</span>Sales</div>
         <h2>Every enquiry gets a call. Every call gets a plan.</h2>
         <p>We shape your offer, write scripts that sound like you, and set up a pipeline where no lead goes cold.</p>
         <div class="chips"><span>Offer and pricing</span><span>DM and call scripts</span><span>CRM pipeline</span><span>Follow-up</span></div>
       </div>
       <div class="panel R" id="pn2">
-        <div class="eyebrow"><span class="fl">3</span>Marketing</div>
+        <div class="eyebrow"><span class="fl">2</span>Marketing</div>
         <h2>Get seen on every wall that matters.</h2>
         <p>Content, ads and lead magnets built around your coaching style, out every single week.</p>
         <div class="chips"><span>Content plan</span><span>Short-form video</span><span>Meta ads</span><span>Lead magnets</span></div>
       </div>
       <div class="panel R" id="pn3">
-        <div class="eyebrow"><span class="fl">2</span>Automations</div>
+        <div class="eyebrow"><span class="fl">1</span>Automations</div>
         <h2>Pull one lever. The admin runs itself.</h2>
         <p>Instant replies, booking reminders, onboarding and check-ins that keep running while you coach.</p>
         <div class="chips"><span>WhatsApp and email</span><span>Reminders</span><span>Onboarding</span><span>Renewals</span></div>
@@ -503,11 +503,13 @@ function drawOffice(state){
 
 // ledges ("bases") on each working floor
 const ledgeLED = new THREE.MeshBasicMaterial({ color:'#5CC6D3' });
+const streetOverhang = []; // the automations walkway that juts over the ground-floor studio (hidden on phones there)
 [1, 2, 3].forEach(k => {
   const y = F[k];
-  box(5.3, .14, 1.26, matWood, 3.1, y - .07, .75);
+  const base = box(5.3, .14, 1.26, matWood, 3.1, y - .07, .75);
   const led = new THREE.Mesh(new THREE.BoxGeometry(5.3, .025, .02), ledgeLED); led.position.set(3.1, y - .1, 1.385); scene.add(led);
-  [1.0, 5.2].forEach(x => { const b = box(.08, .5, .9, matTrim, x, y - .42, .5); b.rotation.x = .5; });
+  const br = [1.0, 5.2].map(x => { const b = box(.08, .5, .9, matTrim, x, y - .42, .5); b.rotation.x = .5; return b; });
+  if (k === 3) streetOverhang.push(base, led, br[0], br[1]);
 });
 // roof deck jutting out over the street
 box(5.3, .14, 1.5, matWood, 3.1, F[0] - .07, .62);
@@ -544,11 +546,11 @@ function infoBoard(x, y, w, h, accent, kicker, title, bullets){
   return m;
 }
 { const TEAL = '#5CC6D3', WARM = '#F6A06A';
-  infoBoard(-0.35, 13.35, 2.5, 1.6, TEAL, 'FLOOR 04 · SALES', 'Signed, not chased',
+  infoBoard(-0.35, 13.35, 2.5, 1.6, TEAL, 'FLOOR 03 · SALES', 'Signed, not chased',
     ['Offer & pricing that converts', 'DM + call scripts in your voice', 'A CRM where no lead goes cold']);
-  infoBoard(1.8, 10.55, 2.3, 1.4, WARM, 'FLOOR 03 · MARKETING', 'Leads every week',
+  infoBoard(1.8, 10.55, 2.3, 1.4, WARM, 'FLOOR 02 · MARKETING', 'Leads every week',
     ['Weekly content + short-form', 'Meta ads that book calls', 'Lead magnets for your niche']);
-  infoBoard(1.3, 6.0, 2.3, 1.4, TEAL, 'FLOOR 02 · AUTOMATIONS', 'Runs without you',
+  infoBoard(1.3, 6.0, 2.3, 1.4, TEAL, 'FLOOR 01 · AUTOMATIONS', 'Runs without you',
     ['Instant WhatsApp replies', 'Booking, reminders, no-shows', 'Follow-up that never forgets']);
   infoBoard(0.4, 2.5, 2.4, 1.55, WARM, 'GROUND · WEBSITES', 'A site that sells',
     ['Fast, mobile-first coach site', 'Clicks turn into booked calls', 'Live in days, not months']);
@@ -1055,14 +1057,23 @@ const CAM = [
 // upper area. { tx,ty = look target; d = distance; az,el = orbit; sh = look
 // shift (lowers the look so the component rides higher, clearing the card). }
 const PORT = [
-  { tx:2.40, ty:16.35, d:8.6,  az:-.14, el:.05, sh:-.55 }, // roof: pushups
+  { tx:1.95, ty:17.0,  d:15.5, az:.34,  el:.42, sh:-.55 }, // roof: drone view over the lit terrace
   { tx:3.05, ty:13.35, d:11.2, az:.02,  el:.03, sh:-.85 }, // sales: pipeline board + call
   { tx:2.95, ty:9.45,  d:10.8, az:.05,  el:.03, sh:-.80 }, // marketing: posters
   { tx:2.80, ty:5.45,  d:10.0, az:.12,  el:.04, sh:-.75 }, // automations: lever + board
   { tx:2.75, ty:2.05,  d:11.8, az:-.02, el:.055, sh:-.58 } // websites: coach + the site he shipped
 ];
+// Phone reveal per floor: open on the coach (near), then move to showcase that
+// floor's result (far) and rest there. trig = T when the move starts; dur = its length.
+const REVEAL = [
+  { near:{tx:2.40,ty:16.35,d:8.6,az:-.14,el:.05,sh:-.55}, far:{tx:1.95,ty:17.0,d:15.5,az:.34,el:.42,sh:-.55}, trig:2.5, dur:2.6 }, // roof: normal pushup → drone over the lit terrace
+  { near:{tx:2.55,ty:12.5,d:7.6,az:.04,el:.05,sh:-.35}, far:{tx:3.05,ty:13.35,d:11.2,az:.02, el:.03,sh:-.85}, trig:1.4, dur:1.6 }, // sales: pipeline board
+  { near:{tx:2.35,ty:8.55,d:7.8,az:.05,el:.05,sh:-.35}, far:{tx:2.95,ty:9.45, d:10.8,az:.05, el:.03,sh:-.80}, trig:1.8, dur:1.8 }, // marketing: posters
+  { near:{tx:2.25,ty:4.70,d:7.4,az:.10,el:.05,sh:-.35}, far:{tx:2.80,ty:5.45, d:10.0,az:.12, el:.04,sh:-.75}, trig:1.6, dur:1.6 }, // automations: machine + board
+  { near:{tx:2.35,ty:1.55,d:8.6,az:.03,el:.06,sh:-.35}, far:{tx:4.50,ty:2.05, d:12.0,az:-.05,el:.07,sh:-.70}, trig:1.9, dur:1.8 } // websites: PUSHUP STUDIO
+];
 const camT = new THREE.Vector3(), camP = new THREE.Vector3(), lookT = new THREE.Vector3(), lookP = new THREE.Vector3();
-let camInit = false;
+let camInit = false, camClock = 0;
 function cameraFor(st, portrait){
   let c;
   if (st.hold) c = { ...CAM[st.k] };
@@ -1075,15 +1086,17 @@ function cameraFor(st, portrait){
   }
   if (portrait){
     if (st.hold){
-      if (st.k === 4){
-        // ground floor on phones: open on the coach at the button, then pan
-        // right to reveal the PUSHUP STUDIO once he's pressed it.
-        const BTN_CAM    = { tx:2.35, ty:1.55, d:8.6,  az:.03,  el:.06, sh:-.35 };
-        const STUDIO_CAM = { tx:4.5, ty:2.35, d:12.2, az:-.05, el:.15, sh:-.5 };
-        const s = smooth((st.T - 1.9)/1.8);          // press lands ~T1.9; pan over ~1.8s
-        const L = (a, b) => lerp(a, b, s);
-        c = { tx:L(BTN_CAM.tx, STUDIO_CAM.tx), ty:L(BTN_CAM.ty, STUDIO_CAM.ty), d:L(BTN_CAM.d, STUDIO_CAM.d),
-              az:L(BTN_CAM.az, STUDIO_CAM.az), el:L(BTN_CAM.el, STUDIO_CAM.el), shift:L(BTN_CAM.sh, STUDIO_CAM.sh) };
+      const rv = REVEAL[st.k];
+      if (rv){
+        // open on the coach doing the work, then move to reveal that floor's result
+        const s = smooth((st.T - rv.trig)/rv.dur);
+        const n = rv.near, f = rv.far, L = (a, b) => lerp(a, b, s);
+        c = { tx:L(n.tx, f.tx), ty:L(n.ty, f.ty), d:L(n.d, f.d), az:L(n.az, f.az), el:L(n.el, f.el), shift:L(n.sh, f.sh) };
+        if (st.k === 0){                             // terrace: slow drone drift once we're in the aerial view
+          c.az += Math.sin(camClock*0.20)*0.16*s;
+          c.el += Math.sin(camClock*0.14 + 1)*0.035*s;
+          c.tx += Math.sin(camClock*0.20)*0.25*s;
+        }
       } else {
         const q = PORT[st.k];
         c = { tx:q.tx, ty:q.ty, d:q.d, az:q.az, el:q.el, shift:q.sh };
@@ -1196,6 +1209,10 @@ function frame(now){
 
   // camera
   const portrait = innerWidth < 760 || camera.aspect < .95;
+  camClock = tNow/1000;
+  // on phones the automations walkway hangs over the studio shot — drop it there
+  const hideOverhang = portrait && uNow > 3.65;
+  for (let i = 0; i < streetOverhang.length; i++) streetOverhang[i].visible = !hideOverhang;
   const c = cameraFor(st, portrait);
   lookT.set(c.tx, c.ty + (c.shift || 0), 0.6);
   camT.set(c.tx + Math.sin(c.az)*Math.cos(c.el)*c.d, c.ty + Math.sin(c.el)*c.d, .6 + Math.cos(c.az)*Math.cos(c.el)*c.d);
