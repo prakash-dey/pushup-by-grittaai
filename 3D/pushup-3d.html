@@ -303,9 +303,9 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
         <div class="fgrid">
           <label class="field"><span>Name</span><input type="text" name="name" autocomplete="name" placeholder="Your name" required></label>
           <label class="field"><span>Email</span><input type="email" name="email" autocomplete="email" placeholder="you@email.com" required></label>
-          <label class="field"><span>Phone / WhatsApp</span><input type="tel" name="phone" autocomplete="tel" placeholder="Best number to reach you"></label>
-          <label class="field"><span>Instagram</span><input type="text" name="instagram" placeholder="@yourhandle"></label>
-          <label class="field field-full"><span>What do you coach?</span><input type="text" name="niche" placeholder="e.g. strength, online fat loss, hybrid"></label>
+          <label class="field"><span>Phone / WhatsApp</span><input type="tel" name="phone" autocomplete="tel" placeholder="Best number to reach you" required></label>
+          <label class="field"><span>Instagram</span><input type="text" name="instagram" placeholder="@yourhandle" required></label>
+          <label class="field field-full"><span>What do you coach?</span><input type="text" name="niche" placeholder="e.g. strength, online fat loss, hybrid" required></label>
           <label class="field field-full"><span>Where's the bottleneck? <i>(optional)</i></span><textarea name="message" rows="3" placeholder="Leads, follow-up, content, website…"></textarea></label>
         </div>
         <div class="row"><button type="submit" class="cta">Book my strategy call</button><a class="ghost" href="#services">See our services</a></div>
@@ -1200,26 +1200,41 @@ let machineOnAt = null, screenLevel = 0, callLevel = 0;
   var form = document.getElementById('bookForm');
   if(!form) return;
   var note = document.getElementById('formNote');
+  // Google Form that collects these responses.
+  var GFORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLScXs9BEAPhFQyAuksruAN_FdwPloYsJKNS0qlbk49C3ku63Aw/formResponse';
+  var GFORM_ENTRIES = {
+    name: 'entry.555287714',
+    email: 'entry.979779259',
+    phone: 'entry.1260074607',
+    instagram: 'entry.17765076',
+    niche: 'entry.345707898',
+    message: 'entry.1290069646'
+  };
+  var submitting = false;
   form.addEventListener('submit', function(e){
     e.preventDefault();
+    if(submitting) return;
     if(!form.checkValidity()){ form.reportValidity(); return; }
     var d = new FormData(form);
-    var name = (d.get('name')||'').trim();
-    var lines = [
-      'Name: ' + name,
-      'Email: ' + (d.get('email')||'').trim(),
-      'Phone / WhatsApp: ' + (d.get('phone')||'').trim(),
-      'Instagram: ' + (d.get('instagram')||'').trim(),
-      'Coaching niche: ' + (d.get('niche')||'').trim(),
-      '',
-      'Bottleneck:',
-      (d.get('message')||'').trim()
-    ];
-    var subject = 'Strategy call with Pushup' + (name ? ' — ' + name : '');
-    var href = 'mailto:team@grittaai.com?subject=' + encodeURIComponent(subject) +
-               '&body=' + encodeURIComponent(lines.join('\n'));
-    if(note){ note.textContent = 'Opening your email to send — if nothing opens, write us at team@grittaai.com.'; note.classList.add('ok'); }
-    window.location.href = href;
+    var body = new URLSearchParams();
+    Object.keys(GFORM_ENTRIES).forEach(function(k){
+      body.append(GFORM_ENTRIES[k], (d.get(k)||'').trim());
+    });
+    submitting = true;
+    var btn = form.querySelector('button[type="submit"]');
+    if(btn){ btn.disabled = true; }
+    if(note){ note.textContent = 'Sending…'; note.classList.remove('ok'); }
+    // Google Forms does not send CORS headers, so the response is opaque;
+    // a resolved fetch (or the catch, for the opaque-response network quirk)
+    // both mean the submission was accepted.
+    fetch(GFORM_ACTION, { method: 'POST', mode: 'no-cors', body: body })
+      .then(done).catch(done);
+    function done(){
+      form.reset();
+      if(note){ note.textContent = 'Thanks — we’ve got your details and will reply within one business day.'; note.classList.add('ok'); }
+      if(btn){ btn.disabled = false; }
+      submitting = false;
+    }
   });
 })();
 </script>
