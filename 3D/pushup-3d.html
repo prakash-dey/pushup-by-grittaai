@@ -27,7 +27,7 @@
 
 <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Organization", "@id": "https://pushup.grittaai.com/#org", "name": "Pushup by Gritta AI", "alternateName": "Pushup", "url": "https://pushup.grittaai.com/", "parentOrganization": {"@type": "Organization", "name": "Gritta AI"}, "description": "Pushup by Gritta AI builds sales systems, marketing, automations and websites for fitness coaches, so you sign more clients and spend less time on admin. Book a free strategy call."}, {"@type": "WebSite", "@id": "https://pushup.grittaai.com/#site", "url": "https://pushup.grittaai.com/", "name": "Pushup by Gritta AI", "publisher": {"@id": "https://pushup.grittaai.com/#org"}, "inLanguage": "en"}, {"@type": "ProfessionalService", "@id": "https://pushup.grittaai.com/#service", "name": "Pushup by Gritta AI", "url": "https://pushup.grittaai.com/", "description": "Pushup by Gritta AI builds sales systems, marketing, automations and websites for fitness coaches, so you sign more clients and spend less time on admin. Book a free strategy call.", "provider": {"@id": "https://pushup.grittaai.com/#org"}, "audience": {"@type": "Audience", "audienceType": "Fitness coaches and personal trainers"}, "hasOfferCatalog": {"@type": "OfferCatalog", "name": "Growth services for fitness coaches", "itemListElement": [{"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Sales systems for fitness coaches", "description": "We shape your offer and pricing, write DM and call scripts that sound like you, and set up a CRM pipeline with follow-up so no lead goes cold."}}, {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Marketing for fitness coaches", "description": "A weekly content plan, short-form video, Meta ads and lead magnets built around your coaching style, so new leads arrive every week."}}, {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Automations for fitness coaches", "description": "Instant WhatsApp and email replies, booking reminders, onboarding and renewals, wired together so clients are looked after without you typing."}}, {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Websites for fitness coaches", "description": "Fast, mobile-first coaching websites with booking, payments and lead capture built in from day one, set up to be found on Google."}}]}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Who is Pushup for?", "acceptedAnswer": {"@type": "Answer", "text": "Pushup by Gritta AI works with fitness coaches, personal trainers, yoga teachers, run clubs and small studios that want more clients without more admin."}}, {"@type": "Question", "name": "What does Pushup actually do?", "acceptedAnswer": {"@type": "Answer", "text": "We build and run the four parts of a coaching business that bring in clients: sales systems, marketing, automations and the website that ties them together."}}, {"@type": "Question", "name": "Do I need all four services?", "acceptedAnswer": {"@type": "Answer", "text": "No. Most coaches start with the part that is holding them back most, often follow-up or the website, and add the rest when it makes sense."}}, {"@type": "Question", "name": "How do we get started?", "acceptedAnswer": {"@type": "Answer", "text": "Book a free strategy call. We look at your offer, funnel and follow-up, and show you the first three things we would change."}}]}]}</script>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&family=Fraunces:ital,opsz,wght@1,9..144,400..600&display=swap" rel="stylesheet">
-<noscript><style>#story{height:auto!important}#stage{position:relative;height:auto;min-height:0}.panel{position:relative!important;opacity:1!important;visibility:visible!important;transform:none!important;left:auto!important;top:auto!important;right:auto!important;margin:96px auto 0;width:min(560px,92vw)!important}#loading{display:none}</style></noscript>
+<noscript><style>#story{height:auto!important}#stage{position:relative;height:auto;min-height:0}.panel{position:relative!important;opacity:1!important;visibility:visible!important;transform:none!important;left:auto!important;top:auto!important;right:auto!important;margin:96px auto 0;width:min(560px,92vw)!important}#gl,#ui{opacity:1!important}#loading{display:none}</style></noscript>
 <style>
 /* A sticky WebGL stage over a long scroll track. Scroll moves the coach down the building;
    on each floor he performs that service on his own, driven by motion-captured animation. */
@@ -53,6 +53,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .nav button:hover{background:rgba(243,239,232,.08)}
 .cta{display:inline-flex;align-items:center;gap:8px;font:inherit;font-weight:600;font-size:14px;color:#071417;background:var(--teal);text-decoration:none;padding:12px 18px;border-radius:10px;border:0;cursor:pointer;white-space:nowrap}
 .cta:hover{background:#7AD5E0;color:#071417}
+.cta:disabled,.cta[aria-busy="true"]{opacity:.6;cursor:progress;background:var(--teal);color:#071417}
 .ghost{font:inherit;font-size:15px;font-weight:600;color:var(--ink);background:none;border:1px solid rgba(243,239,232,.3);padding:12px 18px;border-radius:10px;cursor:pointer;text-decoration:none}
 .ghost:hover{border-color:var(--ink);color:var(--ink)}
 @media (max-width:860px){.nav{display:none}.brand small{display:none}}
@@ -96,10 +97,22 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .rail button:hover{border-color:var(--teal)}
 .rail button[aria-current="true"]{background:var(--teal);border-color:var(--teal);color:#061417;box-shadow:0 0 18px rgba(92,198,211,.5)}
 
-#loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;font-size:14px;color:var(--muted);background:var(--night);transition:opacity .6s}
-#loading b{display:block;width:180px;height:3px;border-radius:2px;background:rgba(243,239,232,.12);overflow:hidden}
-#loading b i{display:block;height:100%;width:0;background:var(--teal);transition:width .3s}
-#loading.done{opacity:0;pointer-events:none}
+/* The scene renders fully behind an opaque veil (#loading); the veil just lifts.
+   No canvas-opacity or blur animation, so only one cheap layer transitions. */
+/* nav + floor rail stay hidden behind the intro, then fade in as the veil lifts */
+.top,.rail{transition:opacity .9s ease .15s}
+html.booting .top,html.booting .rail{opacity:0;pointer-events:none}
+#loading{position:absolute;inset:0;z-index:6;display:flex;align-items:center;justify-content:center;background:var(--night);transition:opacity 1s ease,transform 1s ease;will-change:opacity}
+#loading::before{content:"";position:absolute;width:62vmax;height:62vmax;border-radius:50%;background:radial-gradient(circle,rgba(92,198,211,.16),transparent 62%);animation:ldGlow 3.4s ease-in-out infinite}
+#loading .ld-inner{position:relative;display:flex;flex-direction:column;align-items:center;gap:12px;animation:ldRise 1s cubic-bezier(.2,.7,.2,1) both}
+#loading .ld-mark{font-size:clamp(36px,7.5vw,62px);font-weight:800;letter-spacing:.16em;text-indent:.16em;color:var(--ink);text-shadow:0 0 36px rgba(92,198,211,.42)}
+#loading .ld-by{font-size:12px;font-weight:600;letter-spacing:.34em;text-indent:.34em;text-transform:uppercase;color:var(--muted)}
+#loading .ld-bar{margin-top:14px;display:block;width:200px;height:2px;border-radius:2px;background:rgba(243,239,232,.14);overflow:hidden}
+#loading .ld-bar i{display:block;height:100%;width:0;background:var(--teal);box-shadow:0 0 10px rgba(92,198,211,.7);transition:width .45s ease}
+#loading.done{opacity:0;transform:scale(1.03);pointer-events:none}
+@keyframes ldRise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes ldGlow{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:1;transform:scale(1.09)}}
+@media (prefers-reduced-motion:reduce){#loading .ld-inner,#loading::before{animation:none}}
 
 @media (max-width:760px),(max-aspect-ratio:19/20){
   .rail{display:none}
@@ -122,6 +135,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .field-full{grid-column:1 / -1}
 .field>span{font-size:13px;font-weight:600;letter-spacing:.02em;color:var(--ink)}
 .field>span i{font-weight:400;font-style:normal;color:var(--muted)}
+.field>span i.req{color:var(--warm);font-weight:700;margin-left:2px}
 .field input,.field textarea{font:inherit;font-size:15px;color:var(--ink);background:rgba(243,239,232,.045);border:1px solid var(--line);border-radius:10px;padding:12px 13px;width:100%;box-sizing:border-box;-webkit-appearance:none;appearance:none;transition:border-color .15s,box-shadow .15s}
 .field textarea{resize:vertical;min-height:88px;line-height:1.5}
 .field input::placeholder,.field textarea::placeholder{color:#7D8698}
@@ -176,6 +190,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 </style>
 </head>
 <body>
+<script>document.documentElement.classList.add('booting');setTimeout(function(){document.documentElement.classList.remove('booting');},8000);</script>
 
 <a class="skip" href="#services">Skip to services</a>
 <header class="top">
@@ -244,7 +259,13 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
         <div class="c" id="c2"><span class="ic" style="background:#0B6E80"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg></span><div><strong>Riya signed up</strong><span>Strength 1:1 · starts Monday</span></div></div>
       </div>
     </div>
-    <div id="loading"><span>Building the tower…</span><b><i id="loadBar"></i></b></div>
+    <div id="loading">
+      <div class="ld-inner">
+        <div class="ld-mark">PUSHUP</div>
+        <div class="ld-by">by Gritta AI</div>
+        <b class="ld-bar"><i id="loadBar"></i></b>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -301,11 +322,11 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
     <div class="book-side">
       <form class="book-form" id="bookForm" novalidate>
         <div class="fgrid">
-          <label class="field"><span>Name</span><input type="text" name="name" autocomplete="name" placeholder="Your name" required></label>
-          <label class="field"><span>Email</span><input type="email" name="email" autocomplete="email" placeholder="you@email.com" required></label>
-          <label class="field"><span>Phone / WhatsApp</span><input type="tel" name="phone" autocomplete="tel" placeholder="Best number to reach you" required></label>
-          <label class="field"><span>Instagram</span><input type="text" name="instagram" placeholder="@yourhandle" required></label>
-          <label class="field field-full"><span>What do you coach?</span><input type="text" name="niche" placeholder="e.g. strength, online fat loss, hybrid" required></label>
+          <label class="field"><span>Name<i class="req" aria-hidden="true">*</i></span><input type="text" name="name" autocomplete="name" placeholder="Your name" required></label>
+          <label class="field"><span>Email<i class="req" aria-hidden="true">*</i></span><input type="email" name="email" autocomplete="email" placeholder="you@email.com" required></label>
+          <label class="field"><span>Phone / WhatsApp<i class="req" aria-hidden="true">*</i></span><input type="tel" name="phone" autocomplete="tel" placeholder="Best number to reach you" required></label>
+          <label class="field"><span>Instagram<i class="req" aria-hidden="true">*</i></span><input type="text" name="instagram" placeholder="@yourhandle" required></label>
+          <label class="field field-full"><span>What do you coach?<i class="req" aria-hidden="true">*</i></span><input type="text" name="niche" placeholder="e.g. strength, online fat loss, hybrid" required></label>
           <label class="field field-full"><span>Where's the bottleneck? <i>(optional)</i></span><textarea name="message" rows="3" placeholder="Leads, follow-up, content, website…"></textarea></label>
         </div>
         <div class="row"><button type="submit" class="cta">Book my strategy call</button><a class="ghost" href="#services">See our services</a></div>
@@ -330,7 +351,7 @@ const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const smooth = x => { x = clamp(x); return x*x*(3 - 2*x); };
 const lerp = (a, b, t) => a + (b - a)*t;
 const lerpAng = (a, b, t) => { let d = ((b - a + Math.PI) % (2*Math.PI) + 2*Math.PI) % (2*Math.PI) - Math.PI; return a + d*t; };
-const setLoad = v => { $('loadBar').style.width = Math.round(v*100) + '%'; };
+const setLoad = v => { const b = document.getElementById('loadBar'); if(b) b.style.width = Math.round(v*100) + '%'; };
 
 /* ================= renderer, scene, camera ================= */
 const canvas = $('gl');
@@ -1173,6 +1194,7 @@ let machineOnAt = null, screenLevel = 0, callLevel = 0;
 /* ================= start ================= */
 (async () => {
   try {
+    const bootT0 = performance.now();
     setLoad(.1);
     if (document.fonts && document.fonts.ready) await Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 2500))]);
     drawNeon(); drawOffice(0);
@@ -1181,15 +1203,25 @@ let machineOnAt = null, screenLevel = 0, callLevel = 0;
     rigMeta = meta; rigBuf = bytes.buffer; setLoad(.6);
     buildCoach(); buildClips(); fitLever(); fitPaint(); await buildShop(); setLoad(1);
     resize(); readScroll(); uNow = uTarget;
-    $('loading').classList.add('done');
     window.__p3 = window.__p3 || {}; window.__p3.ready = true; window.__p3.director = director; window.__p3.step = t => frame(t); window.__p3.brushZ = () => { const v = new THREE.Vector3(), w = new THREE.Vector3(); B.brushTip.getWorldPosition(v); B.RightHand.getWorldPosition(w); return [+v.z.toFixed(3), +w.z.toFixed(3), B.brush.visible]; };
     window.__p3.palmPath = (t0, t1, dt) => { const out = [], v = new THREE.Vector3(), w = new THREE.Vector3();
       for (let t = t0; t <= t1 + 1e-6; t += dt){ applyPose(pose('lever', t, ACT_X, F[3], .8, Math.PI/2)); coach.updateMatrixWorld(true);
         B.RightHand.getWorldPosition(v); B.RightHandMiddle1.getWorldPosition(w); v.lerp(w, .6); out.push([+t.toFixed(2), +v.x.toFixed(3), +(v.y - F[3]).toFixed(3), +v.z.toFixed(3)]); }
       return out; }; window.__p3.dbg = () => ({ lever:+lever.quaternion.z.toFixed(2), piv:LEVER.pivot.toArray().map(v => +v.toFixed(2)), len:+LEVER.len.toFixed(3), lamps:lamps.map(l => +l.material.emissiveIntensity.toFixed(2)), call:callK, board:boardState, screen:+screenLevel.toFixed(2), mask:posters.map(P => +P.fill.toFixed(2)) });
+    // Start rendering now, behind the still-visible intro, so the scene is
+    // fully drawn before we reveal it. Hold the intro a minimum beat, then
+    // crossfade: the scene fades up from black as the intro dissolves.
     requestAnimationFrame(frame);
+    const revealWait = Math.max(400, 1100 - (performance.now() - bootT0));
+    setTimeout(() => {
+      document.documentElement.classList.remove('booting');
+      document.getElementById('stage').classList.add('live');
+      $('loading').classList.add('done');
+    }, revealWait);
   } catch (e) {
     console.error(e);
+    document.documentElement.classList.remove('booting');
+    document.getElementById('stage').classList.add('live');
     $('loading').innerHTML = '<span>The 3D scene could not load. Scroll on for the rest of the page.</span>';
   }
 })();
@@ -1222,7 +1254,8 @@ let machineOnAt = null, screenLevel = 0, callLevel = 0;
     });
     submitting = true;
     var btn = form.querySelector('button[type="submit"]');
-    if(btn){ btn.disabled = true; }
+    var btnLabel = btn ? btn.textContent : '';
+    if(btn){ btn.disabled = true; btn.setAttribute('aria-busy','true'); btn.textContent = 'Sending…'; }
     if(note){ note.textContent = 'Sending…'; note.classList.remove('ok'); }
     // Google Forms does not send CORS headers, so the response is opaque;
     // a resolved fetch (or the catch, for the opaque-response network quirk)
@@ -1232,7 +1265,7 @@ let machineOnAt = null, screenLevel = 0, callLevel = 0;
     function done(){
       form.reset();
       if(note){ note.textContent = 'Thanks — we’ve got your details and will reply within one business day.'; note.classList.add('ok'); }
-      if(btn){ btn.disabled = false; }
+      if(btn){ btn.disabled = false; btn.removeAttribute('aria-busy'); btn.textContent = btnLabel; }
       submitting = false;
     }
   });
